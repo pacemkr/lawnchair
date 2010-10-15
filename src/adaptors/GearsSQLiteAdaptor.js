@@ -117,14 +117,14 @@ GearsSQLiteAdaptor.prototype = {
 		var that = this;
 
 		var insert = function(obj, callback) {
-			var id = (obj.key == undefined) ? that.uuid() : obj.key;
+			var id = (typeof obj.key == 'undefined') ? that.uuid() : obj.key;
 			delete(obj.key);
 	
 			var rs = that.db.execute(
 				"INSERT INTO " + that.table + " (id, value, timestamp) VALUES (?,?,?)",
 				[id, that.serialize(obj), that.now()]
 			);
-			if (callback != undefined) {
+			if (typeof callback != 'undefined') {
 				obj.key = id;
 				callback(obj);
 			}
@@ -135,13 +135,13 @@ GearsSQLiteAdaptor.prototype = {
 				"UPDATE " + that.table + " SET value=?, timestamp=? WHERE id=?",
 				[that.serialize(obj), that.now(), id]
 			);
-			if (callback != undefined) {
+			if (typeof callback != 'undefined') {
 				obj.key = id;
 				callback(obj);
 			}
 		};
 	
-		if (obj.key == undefined) {
+		if (typeof obj.key == 'undefined') {
 			insert(obj, callback);
 		} else {
 			this.get(obj.key, function(r) {
@@ -196,12 +196,12 @@ GearsSQLiteAdaptor.prototype = {
 			"DELETE FROM " + this.table + " WHERE id = ?",
 			[(typeof keyOrObj == 'string') ? keyOrObj : keyOrObj.key]
 		);
-		if(callback)
+		if(typeof callback != 'undefined')
 		  callback();
 	},
 	nuke:function(callback) {
 		this.db.execute("DELETE FROM " + this.table);
-		if(callback)
+		if(typeof callback != 'undefined')
 		  callback();
 		return this;
 	}
