@@ -31,6 +31,7 @@ ServerAdaptor.prototype = {
             throw "This browser doesn't seem to support XHRs very well. Shit eh?";
         }
         // xhr wrapper, taken from quirksmode.org
+        var self = this;
         this.sendRequest = function(url,callback,postData) {
             var req = new XMLHttpRequest();
             if (!req) return;
@@ -43,7 +44,7 @@ ServerAdaptor.prototype = {
                 if (req.readyState != 4) return;
                 if (req.status != 200 && req.status != 304) return;
                 eval('var json = ' + this.responseText + ';');
-                callback(json);
+                callback.call(self, json);
             }
             if (req.readyState == 4) return;
             req.send(postData);
