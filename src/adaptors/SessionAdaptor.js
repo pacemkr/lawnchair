@@ -52,26 +52,32 @@ ServerAdaptor.prototype = {
 	get:function(key, callback){
         this.sendRequest(this.endpoint + '?get=' + key, function(json) {
             if (typeof json.key != 'undefined') json.key = key;
-            if (callback) this.terseToVerboseCallback(callback)(json);
+            if (typeof callback != 'undefined') this.terseToVerboseCallback(callback)(json);
         });
 	},
 	save:function(obj, callback){
-		var id = obj.key || this.uuid();
-		delete obj.key;
-        obj.key = id;
-		if (callback)
-			this.terseToVerboseCallback(callback)(obj);
+        if (typeof obj.key == 'undefined') {
+            obj.key = this.uuid();
+        }
+        var id = obj.key;
+		this.sendRequest(this.endpoint + '?save=' + id, function(json) {
+            if (typeof callback != 'undefined') this.terseToVerboseCallback(callback)(json);
+        }, JSON.stringify(obj));
 	},
 	all:function(callback){
-		var cb = this.terseToVerboseCallback(callback);
-		if (cb)
-			cb(yar);
+		this.sendRequest(this.endpoint + '?all=true', function(json) {
+            if (typeof callback != 'undefined') this.terseToVerboseCallback(callback)(json);
+        });
 	},
 	remove:function(keyOrObj, callback) {
 		var key = (typeof keyOrObj == 'string') ? keyOrObj : keyOrObj.key;
-		if (callback)
-		    this.terseToVerboseCallback(callback)();
+        this.sendRequest(this.endpoint + '?remove=' + key, function(json) {
+            if (typeof callback != 'undefined') this.terseToVerboseCallback(callback)(json);
+        });
 	},
 	nuke:function(callback) {
+        this.sendRequest(this.endpoint + '?nuke=true', function(json) {
+            // ?
+        });
 	}
 };
