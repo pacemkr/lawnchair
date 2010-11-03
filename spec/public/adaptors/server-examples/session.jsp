@@ -1,4 +1,4 @@
-<%@ page import="java.io.*" %><%
+<%@ page import="java.io.*, java.util.*" %><%
     // TODO: support client-specified IDs for differentiating between stores.
 	if (request.getParameter("nuke") != null || request.getParameter("all") != null) {
         // nuke() and all()
@@ -45,7 +45,7 @@
 			NextLine = FormBuffer.readLine();
 		}
 		// Save to session attribute
-		session.setAttribute(key, );
+		session.setAttribute(key, BodyContent.toString());
 		out.print(BodyContent.toString());
     }
 %>
