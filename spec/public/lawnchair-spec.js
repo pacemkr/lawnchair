@@ -1,3 +1,5 @@
+// TODO: add the chain function to clean up async tests.
+// TODO: make sure EVERY test is running async; no synchronous test code as some adapters will fail.
 module('Lawnchair', {
     setup:function() {
         // I like to make all my variables globals. Starting a new trend.
