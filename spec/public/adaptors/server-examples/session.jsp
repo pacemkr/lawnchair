@@ -16,9 +16,11 @@
             }
         }
         if (isAll) {
-            all.deleteCharAt(all.length()-1); // trim trailing comma
+            if (all.length() > 1) all.deleteCharAt(all.length()-1); // trim trailing comma
             all.append("]");
             out.print(all.toString());
+        } else {
+            out.print("{}");
         }
 	} else if (request.getParameter("get") != null) {
 		// get()
