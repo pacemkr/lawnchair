@@ -3,7 +3,7 @@
  * ===================
  * Lawnchair implementation that leverages a server-side endpoint with a basic key/value store API available.
  * Requires that you have a server-side implementation exposed that returns JSON and accepts GET parameters as follows:
-   * id (optional, pass with all requests): some unique ID to differentiate between clients. Optional, up to you if you want to support it in your server-side implementation. 
+   *COMING SOON* id (optional, pass with all requests): some unique ID to differentiate between clients. Optional, up to you if you want to support it in your server-side implementation. 
    * nuke: presence of this parameter destroys the store.
    * get=key: returns object associated with key passed into 'get' parameter.
    * save=key: saves an object with key passed into the 'save' querystring parameter. server-side should read POST data for the JSON object to save.
@@ -25,13 +25,35 @@ ServerAdaptor.prototype = {
         this.endpoint = options.endpoint;
         if (typeof options.id != 'undefined') this.id = options.id
         else options.id = null;
+        try {
+            var testxhr = new XMLHttpRequest();
+        } catch(e) {
+            throw "This browser doesn't seem to support XHRs very well. Shit eh?";
+        }
+        // xhr wrapper, taken from quirksmode.org
+        this.sendRequest = function(url,callback,postData) {
+            var req = new XMLHttpRequest();
+            if (!req) return;
+            var method = (typeof postData != 'undefined') ? "POST" : "GET";
+            req.open(method,url,true);
+            if (postData) {
+                req.setRequestHeader('Content-type','application/x-www-form-urlencoded');
+            }
+            req.onreadystatechange = function () {
+                if (req.readyState != 4) return;
+                if (req.status != 200 && req.status != 304) return;
+                eval('var json = ' + this.responseText + ';');
+                callback(json);
+            }
+            if (req.readyState == 4) return;
+            req.send(postData);
+        }
 	},
 	get:function(key, callback){
-		if (obj) {
-			obj.key = key;
-		}
-		if (callback)
-            this.terseToVerboseCallback(callback)(obj);
+        this.sendRequest(this.endpoint + '?get=' + key, function(json) {
+            if (typeof json.key != 'undefined') json.key = key;
+            if (callback) this.terseToVerboseCallback(callback)(json);
+        });
 	},
 	save:function(obj, callback){
 		var id = obj.key || this.uuid();
