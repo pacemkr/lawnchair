@@ -20,7 +20,11 @@ var ServerAdaptor = function(options) {
 };
 
 ServerAdaptor.prototype = {
-	init:function(){
+	init:function(options){
+        if (typeof options.endpoint == 'undefined') throw "Server adapter requires an 'endpoint' parameter, defining a server-side endpoint/API to use.";
+        this.endpoint = options.endpoint;
+        if (typeof options.id != 'undefined') this.id = options.id
+        else options.id = null;
 	},
 	get:function(key, callback){
 		if (obj) {
