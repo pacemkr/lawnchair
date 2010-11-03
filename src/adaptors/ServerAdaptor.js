@@ -37,22 +37,19 @@ ServerAdaptor.prototype = {
             if (!req) return;
             var method = (typeof postData != 'undefined') ? "POST" : "GET";
             req.open(method,url,true);
-            if (postData) {
-                req.setRequestHeader('Content-type','application/x-www-form-urlencoded');
-            }
             req.onreadystatechange = function () {
                 if (req.readyState != 4) return;
                 if (req.status != 200 && req.status != 304) return;
-                eval('var json = ' + this.responseText + ';');
+                eval('var json = ' + this.responseText);
                 callback.call(self, json);
             }
             if (req.readyState == 4) return;
-            req.send(postData);
+            req.send((typeof postData != 'undefined'?postData:null));
         }
 	},
 	get:function(key, callback){
         this.sendRequest(this.endpoint + '?get=' + key, function(json) {
-            if (typeof json.key != 'undefined') json.key = key;
+            if (json != null && typeof json.key != 'undefined') json.key = key;
             if (typeof callback != 'undefined') this.terseToVerboseCallback(callback)(json);
         });
 	},
@@ -78,7 +75,7 @@ ServerAdaptor.prototype = {
 	},
 	nuke:function(callback) {
         this.sendRequest(this.endpoint + '?nuke=true', function(json) {
-            // ?
+            if (typeof callback != 'undefined') this.terseToVerboseCallback(callback)(json);
         });
 	}
 };
