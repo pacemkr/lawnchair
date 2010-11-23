@@ -1,5 +1,24 @@
-// TODO: add the chain function to clean up async tests.
-// TODO: make sure EVERY test is running async; no synchronous test code as some adapters will fail.
+var chain = function(tests, delay) {
+    if (tests instanceof Array) {
+        if (tests.length > 0) {
+            if (typeof delay != 'undefined') {
+                setTimeout(function() {
+                    tests.shift()();
+                    chain(tests, delay);
+                }, delay);
+            } else {
+                return function() {
+                    tests.shift().apply({
+                        next:function() {
+                            return chain(tests);
+                        }
+                    }, arguments);
+                }
+            }
+        } else QUnit.start();
+    }
+};
+
 module('Lawnchair', {
     setup:function() {
         // I like to make all my variables globals. Starting a new trend.
@@ -10,91 +29,90 @@ module('Lawnchair', {
         me = null;
     }
 });
-
-test('ctor', function() {
-    QUnit.stop();
-    expect(3);
-    // should init and call callback
-    var lc = new Lawnchair({adaptor:store.adaptor}, function() {
-        ok(true, 'should call passed in callback');
-        equals(this, lc, 'this is bound to the instance');
-        start(); 
-    }); 
-    // raise exception if no ctor callback is supplied
-    try {
-        var lc2 = new Lawnchair({adaptor:store.adaptor});    
-    } catch(e) {
-        ok(true, 'exception raised if no callback supplied to init');
-    }
-});
-	
-test( 'nuke()', function() {
-    QUnit.stop();
-    expect(4);
-    store.nuke();
-    store.all(function(r) {
-        equals(r.length, 0, "should have 0 length when using full callback syntax");
-        store.nuke();
-        furtherassertions = function() {
-            same(store.nuke(), store, "should be chainable on nuke");
-            store.save(me);
-            store.nuke();
-            store.all(function(r) {
-                equals(r.length, 0, "should have 0 length after saving, then nuking");
-                start();
+    test('ctor', function() {
+        QUnit.stop();
+        expect(3);
+        // raise exception if no ctor callback is supplied
+        try {
+            var lc2 = new Lawnchair({adaptor:store.adapter});    
+        } catch(e) {
+            ok(true, 'exception raised if no callback supplied to init');
+            // should init and call callback
+            console.log(store);
+            var lc = new Lawnchair({adaptor:adapter}, function() {
+                ok(true, 'should call passed in callback');
+                var elsee = this;
+                setTimeout(function() {
+                    // need to timeout here because ctor doesnt return until after callback is called.
+                    equals(elsee, lc, '"this"" is bound to the instance');
+                    QUnit.start(); 
+                }, 250);
             });
         }
-        store.all('equals(r.length, 0, "should have 0 length when using shorthand syntax"); furtherassertions();');
     });
-});
-    
-test( 'save()', function() {
-    QUnit.stop();
-    expect(4);
-    store.save(me, function() {
-        ok(true, 'should call passed in callback');
-        furtherassertions = function() {
-            store.save({something:'yes'}, function() {
-                store.all(function(r) {
-                    equals(r.length, 2, 'should have length 2 after saving another object using full callback');
-                    var id = 'donotdie';
-                    store.save({key:id, foo:'bar'}, function(o){
-                        equals(o.key, id, 'should preserve key in save callback on object');
-                        start();
+	test( 'all()', function() {
+        QUnit.stop();
+        expect(3);
+        store.all(chain([function(r) {
+            ok(true, 'calls callback');
+            ok(r instanceof Array, 'should provide array as parameter');
+            store.save(me, this.next());
+        }, function(r) {
+            store.all(this.next());    
+        }, function(r) {
+            equals(r.length, 1, 'array parameter after save has length 1');
+            QUnit.start();
+        }]));
+    });
+    test( 'nuke()', function() {
+		QUnit.stop();
+        expect(4);
+		store.nuke(function() {
+		    ok(true, "should call callback in nuke");
+		    same(store.nuke(), store, "should be chainable on nuke");
+		    store.all(chain([function(r) {
+                    equals(r.length, 0, "all should return 0 length following a nuke.");
+                    store.save(me);
+                    var self = this;
+                    store.nuke(function() {
+                        store.all(self.next());
                     });
-                });
-            });
-        };
-        store.all('equals(r.length, 1, "should have length 1 after saving something using shorthand callback"); furtherassertions();');
+                },function(r) {
+                    equals(r.length, 0, "should have 0 length after saving, then nuking");
+                    store.all(this.next());
+                    QUnit.start();
+                }
+            ]));
+		});
+	});
+    
+    test( 'save()', function() {
+        QUnit.stop();
+        expect(4);
+        store.save(me, chain([function(one) {
+            ok(true, 'should call passed in callback');
+        }, function(two) {
+            
+        }, function(three) {
+        }]));
     });
-});
+    
 
-test( 'all()', function() {
-    QUnit.stop();
-    expect(2);
-    store.all(function(r) {
-        furtherassertions = function() {
-            start();
-        };
-        ok(typeof r.length != "undefined" && r.length != null, 'should return an object with a length property in callback, using full callback');
-        store.all('ok(typeof r.length != "undefined" && r.length != null, "should return an object with a length property in callback, using shorthand callback"); furtherassertions();');
+    
+    test( 'get()', function() {
+        QUnit.stop();
+        expect(3);
+		store.save({key:'xyz123', name:'tim'}, function(){
+    		store.get('xyz123', function(r) {
+    			equals(r.name, 'tim', 'should return proper object when calling get with a key');
+    			start();
+    		});		    
+		});
+        store.get('doesntexist', function(r) {
+            ok(true, 'should call callback even for non-existent key');
+            equals(r, null, 'should return null for non-existent key');
+        });
     });
-});
-
-test( 'get()', function() {
-    QUnit.stop();
-    expect(3);
-    store.save({key:'xyz123', name:'tim'}, function(){
-        store.get('xyz123', function(r) {
-            equals(r.name, 'tim', 'should return proper object when calling get with a key');
-            start();
-        });		    
-    });
-    store.get('doesntexist', function(r) {
-        ok(true, 'should call callback even for non-existent key');
-        equals(r, null, 'should return null for non-existent key');
-    });
-});
 
 test( 'find()', function() {
     QUnit.stop();

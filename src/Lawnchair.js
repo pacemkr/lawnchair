@@ -4,8 +4,10 @@
  * A lightweight JSON document store.
  *
  */
-var Lawnchair = function(opts) {
+var Lawnchair = function(opts, cb) {
+    if (typeof cb == 'undefined') throw "Please provide a callback as second parameter to Lawnchair constructor; this shit's async, yo.";
 	this.init(opts);
+	cb.call(this);
 }
 
 Lawnchair.prototype = {
