@@ -38,7 +38,6 @@ module('Lawnchair', {
         } catch(e) {
             ok(true, 'exception raised if no callback supplied to init');
             // should init and call callback
-            console.log(store);
             var lc = new Lawnchair({adaptor:adapter}, function() {
                 ok(true, 'should call passed in callback');
                 var elsee = this;
@@ -67,37 +66,42 @@ module('Lawnchair', {
     test( 'nuke()', function() {
 		QUnit.stop();
         expect(4);
-		store.nuke(function() {
+		store.nuke(chain([function(r) {
 		    ok(true, "should call callback in nuke");
-		    same(store.nuke(), store, "should be chainable on nuke");
-		    store.all(chain([function(r) {
-                    equals(r.length, 0, "all should return 0 length following a nuke.");
-                    store.save(me);
-                    var self = this;
-                    store.nuke(function() {
-                        store.all(self.next());
-                    });
-                },function(r) {
-                    equals(r.length, 0, "should have 0 length after saving, then nuking");
-                    store.all(this.next());
-                    QUnit.start();
-                }
-            ]));
-		});
+		    same(store.nuke(this.next()), store, "should be chainable on nuke");
+		}, function(r) {
+		    store.all(this.next());
+    	}, function(r) {
+            equals(r.length, 0, "all should return 0 length following a nuke.");
+            store.save(me, this.next());
+        }, function(r) {
+            store.nuke(this.next());
+        }, function(r) {
+            store.all(this.next());
+        },function(r) {
+            equals(r.length, 0, "should have 0 length after saving, then nuking");
+            QUnit.start();
+        }]));
 	});
     
     test( 'save()', function() {
         QUnit.stop();
         expect(4);
+        var testid = 'donotdie';
         store.save(me, chain([function(one) {
             ok(true, 'should call passed in callback');
+            equals(one, me, 'should pass in original saved object in callback');
+            store.save({something:'else'}, this.next());
+        }, function(all) {
+            store.all(this.next());
         }, function(two) {
-            
+            equals(two.length, 2, 'should have length 2 after saving two objects');
+            store.save({key:testid, foo:'bar'}, this.next());
         }, function(three) {
+            equals(three.key, testid, 'should preserve key in save callback on object');
+            QUnit.start();
         }]));
     });
-    
-
     
     test( 'get()', function() {
         QUnit.stop();
