@@ -1,3 +1,4 @@
+// 
 var chain = function(tests, delay) {
     if (tests instanceof Array) {
         if (tests.length > 0) {
@@ -106,53 +107,44 @@ module('Lawnchair', {
     test( 'get()', function() {
         QUnit.stop();
         expect(3);
-		store.save({key:'xyz123', name:'tim'}, function(){
-    		store.get('xyz123', function(r) {
-    			equals(r.name, 'tim', 'should return proper object when calling get with a key');
-    			start();
-    		});		    
-		});
-        store.get('doesntexist', function(r) {
+		store.save({key:'xyz123', name:'tim'}, chain([function(){
+    		store.get('xyz123', this.next());
+    	}, function(r) {
+			equals(r.name, 'tim', 'should return proper object when calling get with a key');
+            store.get('doesntexist', this.next());
+    	}, function(r) {
             ok(true, 'should call callback even for non-existent key');
             equals(r, null, 'should return null for non-existent key');
-        });
+            QUnit.start();
+        }]));
     });
 
 test( 'find()', function() {
     QUnit.stop();
-    expect(5);
-    store.save({dummy:'data'}, function() {
-        store.save(me, function() {
-            store.save({test:'something'}, function() {
-                store.find('r.name == "brian"', function(r, i) {
-                equals(r.name, me.name, 'should return same record that was saved, matching the condition, using shorthand condition and full callback');
-                equals(i, 1, 'should return proper index in callback function');
-                store.find(function(rec) {
-                    return rec.name == 'brian';
-                }, function(re, ind) {
-                    equals(re.name, me.name, 'should return same record that was saved, matching the condition, using full condition and full callback');
-                    store.find(function(reco) {
-                        return reco.name == 'brian';
-                    }, function(r) {
-                        equals(r.name, me.name, "should return same record that was saved, matching the condition, using full condition and shorthand callback");
-                        store.find(
-                            'r.name == "brian"',
-                            function(recor){
-                                // change my age
-                                recor.age = 31;
-                                store.save(recor, function() {
-                                    store.find('r.name == "brian"', function(record) {
-                                        equals(record.age, 31, "should return updated record data after finding, changing something, saving, and finding the same record");
-                                        start();
-                                    });
-                                });
-                            });
-                        });
-                    });
-                });
-            });
-        });
-    });
+    expect(4);
+    store.save({dummy:'data'}, chain([function() {
+        store.save(me, this.next());
+    }, function() {
+        store.save({test:'something'}, this.next());
+    }, function() {
+        store.find('r.name == "brian"', this.next());
+    }, function(r, i) {
+        equals(r.name, me.name, 'should return same record that was saved, matching the condition, using shorthand filter syntax');
+        equals(i, 1, 'should return proper index in callback function');
+        store.find(function(rec) {
+            return rec.name == 'brian';
+        }, this.next());
+    }, function(re, ind) {
+        equals(re.name, me.name, 'should return same record that was saved, matching the condition, using full filter syntax');
+        // change my age
+        re.age = 31;
+        store.save(re, this.next());
+    }, function(record) {
+        store.find('r.name == "brian"', this.next());
+    }, function(record) {
+        equals(record.age, 31, "should return updated record data after finding, changing something, saving, and finding the same record");
+        QUnit.start();
+    }]));
 });
 
 test( 'remove()', function() {
@@ -191,7 +183,9 @@ test( 'remove()', function() {
 });
 
 test( 'Lawnchair helpers', function() {
-    equals(store.adaptor.uuid().length, 36, "uuid() function should create a 36 character string (is this a test, really?)");
+    expect(2);
+    equals(store.adaptor.uuid().length, 36, "uuid() function should create a 36 character string");
+    ok(store.adaptor.uuid() != store.adaptor.uuid(), 'simple inequality test on consecutive calls to uuid()');
 });
 /*	
 
