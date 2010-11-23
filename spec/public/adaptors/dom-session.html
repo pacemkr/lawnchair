@@ -10,7 +10,8 @@
 	<script src="../../../src/Lawnchair.js" type="text/javascript" charset="utf-8"></script>
 	
 	<script type="text/javascript" charset="utf-8">
-		store = new Lawnchair({storage:sessionStorage, adaptor:'dom'});
+	    adapter='dom';
+		store = new Lawnchair({adaptor:adapter, storage:sessionStorage},function(){});
 	</script>
 	<script src="../lawnchair-spec.js" type="text/javascript" charset="utf-8"></script>
 	

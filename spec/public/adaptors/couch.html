@@ -10,7 +10,8 @@
 	<script src="../../../src/adaptors/CouchAdaptor.js" type="text/javascript" charset="utf-8"></script>
 	<script src="../../../src/Lawnchair.js" type="text/javascript" charset="utf-8"></script>
 	<script type="text/javascript" charset="utf-8">
-		store = new Lawnchair({adaptor:'couch', name:'test-store'});
+	    adapter='couch';
+		store = new Lawnchair({adaptor:adapter,name:'test-store'},function(){});
 	</script>
 	<script src="../lawnchair-spec.js" type="text/javascript" charset="utf-8"></script>
 </head>

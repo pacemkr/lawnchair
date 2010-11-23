@@ -12,7 +12,8 @@
 	<script src="../../../src/Lawnchair.js" type="text/javascript" charset="utf-8"></script>
 	
 	<script type="text/javascript" charset="utf-8">
-		store = new Lawnchair({table:'test', adaptor:'air-async'});
+	    adapter='air-async';
+		store = new Lawnchair({adaptor:adapter,table:'test'},function(){});
 	</script>
 	<!--
 		because string callbacks aren't supported, we need to rewrite the tests

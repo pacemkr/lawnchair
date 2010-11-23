@@ -11,7 +11,8 @@
 	<script src="../../../src/Lawnchair.js" type="text/javascript" charset="utf-8"></script>
 	
 	<script type="text/javascript" charset="utf-8">
-		store = new Lawnchair({adaptor:'userdata'});
+	    adapter = 'userdata';
+		store = new Lawnchair({adaptor:adapter},function() {});
 	</script>
 	<script src="../lawnchair-spec.js" type="text/javascript" charset="utf-8"></script>
 </head>
