@@ -6,6 +6,7 @@
  */
 var Lawnchair = function(opts, cb) {
     if (typeof cb == 'undefined') throw "Please provide a callback as second parameter to Lawnchair constructor; this shit's async, yo.";
+    if (!JSON || !JSON.stringify) throw "Native JSON functions unavailable - please include http://www.json.org/json2.js or run on a decent browser :P";
 	this.init(opts);
 	cb.call(this);
 }
@@ -26,9 +27,6 @@ Lawnchair.prototype = {
             'server':window.ServerAdaptor
 		};
 		this.adaptor = opts.adaptor ? new adaptors[opts.adaptor](opts) : new DOMStorageAdaptor(opts);
-		
-        // Check for native JSON functions.
-        if (!JSON || !JSON.stringify) throw "Native JSON functions unavailable - please include http://www.json.org/json2.js or run on a decent browser :P";
 	},
 	
 	// Save an object to the store. If a key is present then update. Otherwise create a new record.
