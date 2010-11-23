@@ -1,4 +1,3 @@
-// 
 var chain = function(tests, delay) {
     if (tests instanceof Array) {
         if (tests.length > 0) {
@@ -119,62 +118,62 @@ module('Lawnchair', {
         }]));
     });
 
-test( 'find()', function() {
-    QUnit.stop();
-    expect(4);
-    store.save({dummy:'data'}, chain([function() {
-        store.save(me, this.next());
-    }, function() {
-        store.save({test:'something'}, this.next());
-    }, function() {
-        store.find('r.name == "brian"', this.next());
-    }, function(r, i) {
-        equals(r.name, me.name, 'should return same record that was saved, matching the condition, using shorthand filter syntax');
-        equals(i, 1, 'should return proper index in callback function');
-        store.find(function(rec) {
-            return rec.name == 'brian';
-        }, this.next());
-    }, function(re, ind) {
-        equals(re.name, me.name, 'should return same record that was saved, matching the condition, using full filter syntax');
-        // change my age
-        re.age = 31;
-        store.save(re, this.next());
-    }, function(record) {
-        store.find('r.name == "brian"', this.next());
-    }, function(record) {
-        equals(record.age, 31, "should return updated record data after finding, changing something, saving, and finding the same record");
-        QUnit.start();
-    }]));
-});
+    test( 'find()', function() {
+        QUnit.stop();
+        expect(4);
+        store.save({dummy:'data'}, chain([function() {
+            store.save(me, this.next());
+        }, function() {
+            store.save({test:'something'}, this.next());
+        }, function() {
+            store.find('r.name == "brian"', this.next());
+        }, function(r, i) {
+            equals(r.name, me.name, 'should return same record that was saved, matching the condition, using shorthand filter syntax');
+            equals(i, 1, 'should return proper index in callback function');
+            store.find(function(rec) {
+                return rec.name == 'brian';
+            }, this.next());
+        }, function(re, ind) {
+            equals(re.name, me.name, 'should return same record that was saved, matching the condition, using full filter syntax');
+            // change my age
+            re.age = 31;
+            store.save(re, this.next());
+        }, function(record) {
+            store.find('r.name == "brian"', this.next());
+        }, function(record) {
+            equals(record.age, 31, "should return updated record data after finding, changing something, saving, and finding the same record");
+            QUnit.start();
+        }]));
+    });
 
-test( 'remove()', function() {
-    QUnit.stop();
-    expect(3);
-    store.save({name:'joni'}, chain([function() {
-        ok(true, 'remove callback should be called');
-        store.find("r.name == 'joni'", this.next());
-    }, function(r){
-        store.remove(r, this.next());
-    }, function(r) {
-        store.all(this.next());
-    }, function(all) {
-        equals(all.length, 0, "should have length 0 after saving, finding, and removing a record using entire object");
-        store.save({key:'die', name:'dudeman'}, this.next());
-    }, function(r) {
-        store.remove('die', this.next());
-    }, function(r){
-        store.all(this.next());
-    }, function(rec) {
-        equals(rec.length, 0, "should have length 0 after saving and removing by string key");
-        QUnit.start();
-    }]));
-});
+    test( 'remove()', function() {
+        QUnit.stop();
+        expect(3);
+        store.save({name:'joni'}, chain([function() {
+            ok(true, 'remove callback should be called');
+            store.find("r.name == 'joni'", this.next());
+        }, function(r){
+            store.remove(r, this.next());
+        }, function(r) {
+            store.all(this.next());
+        }, function(all) {
+            equals(all.length, 0, "should have length 0 after saving, finding, and removing a record using entire object");
+            store.save({key:'die', name:'dudeman'}, this.next());
+        }, function(r) {
+            store.remove('die', this.next());
+        }, function(r){
+            store.all(this.next());
+        }, function(rec) {
+            equals(rec.length, 0, "should have length 0 after saving and removing by string key");
+            QUnit.start();
+        }]));
+    });
 
-test( 'Lawnchair helpers', function() {
-    expect(2);
-    equals(store.adaptor.uuid().length, 36, "uuid() function should create a 36 character string");
-    ok(store.adaptor.uuid() != store.adaptor.uuid(), 'simple inequality test on consecutive calls to uuid()');
-});
+    test( 'Lawnchair helpers', function() {
+        expect(2);
+        equals(store.adaptor.uuid().length, 36, "uuid() function should create a 36 character string");
+        ok(store.adaptor.uuid() != store.adaptor.uuid(), 'simple inequality test on consecutive calls to uuid()');
+    });
 /*	
 
 should( 'get 10 items in a page.', function() {
