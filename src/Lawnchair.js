@@ -20,7 +20,8 @@ Lawnchair.prototype = {
 			'userdata':window.UserDataAdaptor,
 			'air-async':window.AIRSQLiteAsyncAdaptor,
 			'blackberry':window.BlackBerryPersistentStorageAdaptor,
-            'couch':window.CouchAdaptor
+            'couch':window.CouchAdaptor,
+            'server':window.ServerAdaptor
 		};
 		this.adaptor = opts.adaptor ? new adaptors[opts.adaptor](opts) : new DOMStorageAdaptor(opts);
 		
