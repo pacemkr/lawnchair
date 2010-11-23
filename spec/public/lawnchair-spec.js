@@ -149,37 +149,25 @@ test( 'find()', function() {
 
 test( 'remove()', function() {
     QUnit.stop();
-    expect(4);
-    store.save({name:'joni'});
-    store.find(
-        "r.name == 'joni'",
-        function(r){
-            furtherassertions = function() {
-                var callback = function() {
-                    store.all(function(r) {
-                        equals(r.length, 0, "should have length 0 after saving, finding and removing a record and using a callback");
-                        store.save({key:'die', name:'dudeman'});
-                        store.remove('die');
-                        store.all(function(rec) {
-                            equals(r.length, 0, "should have length 0 after saving and removing by key");
-                            var cb = function() {
-                                store.all('equals(r.length, 0, "should have length 0 after saving and removing by key when using a callback"); start();');
-                            };
-                            store.save({key:'die', name:'dudeman'});
-                            store.remove('die', cb);
-                        });
-                    });
-                };
-                store.save({name:'joni'});
-                store.find(
-                    "r.name == 'joni'",
-                    function(r){
-                        store.remove(r, callback);
-                });
-            };
-            store.remove(r);
-            store.all('equals(r.length, 0, "should have length 0 after saving, finding, and removing a record"); furtherassertions();');
-    });
+    expect(3);
+    store.save({name:'joni'}, chain([function() {
+        ok(true, 'remove callback should be called');
+        store.find("r.name == 'joni'", this.next());
+    }, function(r){
+        store.remove(r, this.next());
+    }, function(r) {
+        store.all(this.next());
+    }, function(all) {
+        equals(all.length, 0, "should have length 0 after saving, finding, and removing a record using entire object");
+        store.save({key:'die', name:'dudeman'}, this.next());
+    }, function(r) {
+        store.remove('die', this.next());
+    }, function(r){
+        store.all(this.next());
+    }, function(rec) {
+        equals(rec.length, 0, "should have length 0 after saving and removing by string key");
+        QUnit.start();
+    }]));
 });
 
 test( 'Lawnchair helpers', function() {
