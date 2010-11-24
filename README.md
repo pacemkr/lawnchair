@@ -46,8 +46,10 @@ BUILDING
 ===
 Run ./build from your terminal and provide the list of adapters you want to include in your final
 Lawnchair build. Does a bit of fuzzy (suffix) matching for you. Examples:
-  ./build air blackberry
-  ./build webkit dom
+
+    ./build air blackberry
+    ./build webkit dom
+
 The first will build a Lawnchair with both AIR adapters plus the BlackBerry one. The second will
 build a Lawnchair with WebKitSQLite support as well as DOMStorage support. 
 
