@@ -38,9 +38,19 @@ Lawnchair does not assume how you want to use it. At a minimum will be required 
 - CouchDB adaptor requires the http://localhost:5984/_utils/script/couch.js lib.
 - Server adapter requires a server-side API; see top of ServerAdaptor.js for more details.
 
-Its probably a good idea to concat/minify the js you require. Its a common request to 
+Its probably a good idea to concat/minify the js you require (see below). Its a common request to 
 provide a single file that does some sort of feature detection which, in theory, is nice 
 but in practice its far more efficient to only load what you need (especially on mobile).
+
+BUILDING
+===
+Run ./build from your terminal and provide the list of adapters you want to include in your final
+Lawnchair build. Does a bit of fuzzy (suffix) matching for you. Examples:
+  ./build air blackberry
+  ./build webkit dom
+The first will build a Lawnchair with both AIR adapters plus the BlackBerry one. The second will
+build a Lawnchair with WebKitSQLite support as well as DOMStorage support. 
+
 
 TESTING
 ===
