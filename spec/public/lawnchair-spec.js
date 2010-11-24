@@ -7,12 +7,18 @@ var chain = function(tests, delay) {
                     chain(tests, delay);
                 }, delay);
             } else {
-                return function() {
-                    tests.shift().apply({
-                        next:function() {
-                            return chain(tests);
-                        }
-                    }, arguments);
+                var nextTest = tests.shift();
+                var next = { next: function () {
+                    return chain(tests);
+                } };
+
+                if (typeof nextTest == "string") {
+                    window.thisChain = next;
+                    return nextTest;
+                } else {
+                    return function () {
+                        nextTest.apply(next, arguments);
+                    }
                 }
             }
         } else QUnit.start();
@@ -92,9 +98,8 @@ module('Lawnchair', {
             ok(true, 'should call passed in callback');
             equals(one, me, 'should pass in original saved object in callback');
             store.save({something:'else'}, this.next());
-        }, function(all) {
-            store.all(this.next());
-        }, function(two) {
+        }, "store.all(window.thisChain.next());"
+        , function(two) {
             equals(two.length, 2, 'should have length 2 after saving two objects');
             store.save({key:testid, foo:'bar'}, this.next());
         }, function(three) {
