@@ -52,7 +52,7 @@ DOMStorageAdaptor.prototype = {
 		this.storage.setItem(id, this.serialize(obj));
 		if (callback) {
 		    obj.key = id.split('::')[1];
-		    callback(obj);
+		    this.terseToVerboseCallback(callback)(obj);
 		}
 	},
 
