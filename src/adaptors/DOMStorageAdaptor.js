@@ -89,7 +89,7 @@ DOMStorageAdaptor.prototype = {
 		var key = this.table + '::' + (typeof keyOrObj === 'string' ? keyOrObj : keyOrObj.key);
 		this.storage.removeItem(key);
 		if(callback)
-		  callback();
+		  this.terseToVerboseCallback(callback)();
 	},
 
 	nuke:function(callback) {
@@ -99,7 +99,7 @@ DOMStorageAdaptor.prototype = {
 				self.remove(r[i]);
 			}
 			if(callback)
-			  callback();
+			  self.terseToVerboseCallback(callback)();
 		});
 	}
 };
