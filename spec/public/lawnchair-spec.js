@@ -8,12 +8,11 @@ var chain = function(tests, delay) {
                 }, delay);
             } else {
                 var nextTest = tests.shift();
-                var next = { next: function () {
+                var next = window.thisChain = { next: function () {
                     return chain(tests);
                 } };
 
                 if (typeof nextTest == "string") {
-                    window.thisChain = next;
                     return nextTest;
                 } else {
                     return function () {
@@ -57,21 +56,24 @@ module('Lawnchair', {
     });
 	test( 'all()', function() {
         QUnit.stop();
-        expect(3);
+        expect(4);
         store.all(chain([function(r) {
             ok(true, 'calls callback');
             ok(r instanceof Array, 'should provide array as parameter');
             store.save(me, this.next());
         }, function(r) {
-            store.all(this.next());    
+            store.all(this.next());
         }, function(r) {
             equals(r.length, 1, 'array parameter after save has length 1');
+            store.all('window.thisChain.next()(r)');
+        }, function(r) {
+            ok(true, 'should call terse shorthand syntax');
             QUnit.start();
         }]));
     });
     test( 'nuke()', function() {
 		QUnit.stop();
-        expect(4);
+        expect(5);
 		store.nuke(chain([function(r) {
 		    ok(true, "should call callback in nuke");
 		    same(store.nuke(this.next()), store, "should be chainable on nuke");
@@ -86,13 +88,16 @@ module('Lawnchair', {
             store.all(this.next());
         },function(r) {
             equals(r.length, 0, "should have 0 length after saving, then nuking");
+            store.nuke('window.thisChain.next()(r)');
+        }, function(r) {
+            ok(true, 'should call terse shorthand syntax');
             QUnit.start();
         }]));
 	});
     
     test( 'save()', function() {
         QUnit.stop();
-        expect(4);
+        expect(5);
         var testid = 'donotdie';
         store.save(me, chain([function(one) {
             ok(true, 'should call passed in callback');
@@ -104,13 +109,16 @@ module('Lawnchair', {
             store.save({key:testid, foo:'bar'}, this.next());
         }, function(three) {
             equals(three.key, testid, 'should preserve key in save callback on object');
+            store.save({key:testid, foo:'bar'}, 'window.thisChain.next()(r)');
+        }, function(r) {
+            ok(true, 'should call terse shorthand syntax');
             QUnit.start();
         }]));
     });
     
     test( 'get()', function() {
         QUnit.stop();
-        expect(3);
+        expect(4);
 		store.save({key:'xyz123', name:'tim'}, chain([function(){
     		store.get('xyz123', this.next());
     	}, function(r) {
@@ -119,13 +127,16 @@ module('Lawnchair', {
     	}, function(r) {
             ok(true, 'should call callback even for non-existent key');
             equals(r, null, 'should return null for non-existent key');
+            store.get('xyz123', 'window.thisChain.next()(r)');
+        }, function(r) {
+            ok(true, 'should call terse shorthand syntax');
             QUnit.start();
         }]));
     });
 
     test( 'find()', function() {
         QUnit.stop();
-        expect(4);
+        expect(5);
         store.save({dummy:'data'}, chain([function() {
             store.save(me, this.next());
         }, function() {
@@ -147,13 +158,16 @@ module('Lawnchair', {
             store.find('r.name == "brian"', this.next());
         }, function(record) {
             equals(record.age, 31, "should return updated record data after finding, changing something, saving, and finding the same record");
+            store.find('r.name == "brian"', 'window.thisChain.next()(r)');
+        }, function(r) {
+            ok(true, 'should call terse shorthand syntax');
             QUnit.start();
         }]));
     });
 
     test( 'remove()', function() {
         QUnit.stop();
-        expect(3);
+        expect(4);
         store.save({name:'joni'}, chain([function() {
             ok(true, 'remove callback should be called');
             store.find("r.name == 'joni'", this.next());
@@ -170,6 +184,9 @@ module('Lawnchair', {
             store.all(this.next());
         }, function(rec) {
             equals(rec.length, 0, "should have length 0 after saving and removing by string key");
+            store.remove('die', 'window.thisChain.next()(r)');
+        }, function(r) {
+            ok(true, 'should call terse shorthand syntax');
             QUnit.start();
         }]));
     });
