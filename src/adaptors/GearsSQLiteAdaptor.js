@@ -126,7 +126,7 @@ GearsSQLiteAdaptor.prototype = {
 			);
 			if (typeof callback != 'undefined') {
 				obj.key = id;
-				callback(obj);
+				that.terseToVerboseCallback(callback)(obj);
 			}
 		};
 	
@@ -137,7 +137,7 @@ GearsSQLiteAdaptor.prototype = {
 			);
 			if (typeof callback != 'undefined') {
 				obj.key = id;
-				callback(obj);
+				that.terseToVerboseCallback(callback)(obj);
 			}
 		};
 	
@@ -166,10 +166,10 @@ GearsSQLiteAdaptor.prototype = {
 			var o = this.deserialize(rs.field(1));
 			o.key = key;
 			rs.close();
-			callback(o);
+			this.terseToVerboseCallback(callback)(o);
 		} else {
 			rs.close();
-			callback(null);
+			this.terseToVerboseCallback(callback)(null);
 		}
 	},
 	all:function(callback) {
@@ -197,12 +197,12 @@ GearsSQLiteAdaptor.prototype = {
 			[(typeof keyOrObj == 'string') ? keyOrObj : keyOrObj.key]
 		);
 		if(typeof callback != 'undefined')
-		  callback();
+		  this.terseToVerboseCallback(callback)();
 	},
 	nuke:function(callback) {
 		this.db.execute("DELETE FROM " + this.table);
 		if(typeof callback != 'undefined')
-		  callback();
+		  this.terseToVerboseCallback(callback)();
 		return this;
 	}
 };
