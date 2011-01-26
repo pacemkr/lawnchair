@@ -1,5 +1,6 @@
 #!/bin/bash
 # Help
+
 help() {
     echo "------ usage --------------------------------------------------";
     echo "| build [adapter1 [adapter 2 [...]]]                          |";
