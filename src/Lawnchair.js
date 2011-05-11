@@ -33,6 +33,7 @@ Lawnchair.prototype = {
 	// Save an object to the store. If a key is present then update. Otherwise create a new record.
 	save:function(obj, onSuccess, onFailure) {
 		     onSuccess = onSuccess || this.doNothing;
+		     onFailure = onFailure || this.doNothing;
 		     this.adaptor.save(obj, onSuccess, onFailure)
 	     },
 
