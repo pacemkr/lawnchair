@@ -30,25 +30,25 @@ Lawnchair.prototype = {
 	},
 	
 	// Save an object to the store. If a key is present then update. Otherwise create a new record.
-	save:function(obj, callback) {this.adaptor.save(obj, callback)},
+	save:function(obj, onSuccess, onFailure) {this.adaptor.save(obj, onSuccess, onFailure)},
 	
 	// Invokes a callback on an object with the matching key.
-	get:function(key, callback) {this.adaptor.get(key, callback)},
+	get:function(key, onSuccess, onFailure) {this.adaptor.get(key, onSuccess, onFailure)},
 
 	// Returns whether a key exists to a callback.
-	exists:function(callback) {this.adaptor.exists(callback)},
+	exists:function(onSuccess, onFailure) {this.adaptor.exists(onSuccess, onFailure)},
 	
 	// Returns all rows to a callback.
-	all:function(callback) {this.adaptor.all(callback)},
+	all:function(onSuccess, onFailure) {this.adaptor.all(onSuccess, onFailure)},
 	
 	// Removes a json object from the store.
-	remove:function(keyOrObj, callback) {this.adaptor.remove(keyOrObj, callback)},
+	remove:function(keyOrObj, onSuccess, onFailure) {this.adaptor.remove(keyOrObj, onSuccess, onFailure)},
 	
 	// Removes all documents from a store and returns self.
-	nuke:function(callback) {this.adaptor.nuke(callback);return this},
+	nuke:function(onSuccess, onFailure) {this.adaptor.nuke(onSuccess, onFailure);return this},
 	
 	// Returns a page of results based on offset provided by user and perPage option
-	paged:function(page, callback) {this.adaptor.paged(page, callback)},
+	paged:function(page, onSuccess, onFailure) {this.adaptor.paged(page, onSuccess, onFailure)},
 	
 	/**
 	 * Iterator that accepts two paramters (methods or eval strings):
@@ -57,13 +57,13 @@ Lawnchair.prototype = {
 	 * - callback to invoke on matches
 	 *
 	 */
-	find:function(condition, callback) {
+	find:function(condition, onSuccess, onFailure) {
 		var is = (typeof condition == 'string') ? function(r){return eval(condition)} : condition
-		  , cb = this.adaptor.terseToVerboseCallback(callback);
+		  , cb = this.adaptor.terseToVerboseCallback(onSuccess);
 	
 		this.each(function(record, index) {
 			if (is(record)) cb(record, index); // thats hot
-		});
+		}, onFailure);
 	},
 
 
@@ -72,14 +72,14 @@ Lawnchair.prototype = {
 	 * - Passes the record and the index as the second parameter to the callback.
 	 * - Accepts a string for eval or a method to be invoked for each document in the collection.
 	 */
-	each:function(callback) {
-		var cb = this.adaptor.terseToVerboseCallback(callback);
+	each:function(onSuccess, onFailure) {
+		var cb = this.adaptor.terseToVerboseCallback(onSuccess);
 		this.all(function(results) {
 			var l = results.length;
 			for (var i = 0; i < l; i++) {
 				cb(results[i], i);
 			}
-		});
+		}, onFailure);
 	}
 // --
 };

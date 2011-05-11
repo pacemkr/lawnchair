@@ -17,89 +17,114 @@ var DOMStorageAdaptor = function(options) {
 
 DOMStorageAdaptor.prototype = {
 	init:function(options) {
-		var self = this;
-		this.storage = this.merge(window.localStorage, options.storage);
-		this.table = this.merge('field', options.table);
-		
-		if (!window.Storage) {
-			this.storage = (function () {
-				// window.top.name ensures top level, and supports around 2Mb
-				var data = window.top.name ? self.deserialize(window.top.name) : {};
-				return {
-					setItem: function (key, value) {
-						data[key] = value+""; // force to string
-						window.top.name = self.serialize(data);
-					},
-					removeItem: function (key) {
-						delete data[key];
-						window.top.name = self.serialize(data);
-					},
-					getItem: function (key) {
-						return data[key] || null;
-					},
-					clear: function () {
-						data = {};
-						window.top.name = '';
-					}
-				};
-			})();
-		};
-	},
+		     var self = this;
+		     this.storage = this.merge(window.localStorage, options.storage);
+		     this.table = this.merge('field', options.table);
 
-	save:function(obj, callback) {
-		var id = this.table + '::' + (obj.key || this.uuid());
-		delete obj.key;
-		this.storage.setItem(id, this.serialize(obj));
-		if (callback) {
-		    obj.key = id.split('::')[1];
-		    this.terseToVerboseCallback(callback)(obj);
-		}
-	},
+		     if (!window.Storage) {
+			     this.storage = (function () {
+				     // window.top.name ensures top level, and supports around 2Mb
+				     var data = window.top.name ? self.deserialize(window.top.name) : {};
+				     return {
+					     setItem: function (key, value) {
+							      data[key] = value+""; // force to string
+							      window.top.name = self.serialize(data);
+						      },
+				     removeItem: function (key) {
+							 delete data[key];
+							 window.top.name = self.serialize(data);
+						 },
+				     getItem: function (key) {
+						      return data[key] || null;
+					      },
+				     clear: function () {
+						    data = {};
+						    window.top.name = '';
+					    }
+				     };
+			     })();
+		     };
+	     },
 
-    get:function(key, callback) {
-        var obj = this.deserialize(this.storage.getItem(this.table + '::' + key))
-          , cb = this.terseToVerboseCallback(callback);
-        
-        if (obj) {
-            obj.key = key;
-            if (callback) cb(obj);
-        } else {
-			if (callback) cb(null);
-		}
-    },
+	save:function(obj, onSuccess, onFailure) {
+		     try {
+			     var id = this.table + '::' + (obj.key || this.uuid());
+			     delete obj.key;
+			     this.storage.setItem(id, this.serialize(obj));
+			     if (onSuccess) {
+				     obj.key = id.split('::')[1];
+				     this.terseToVerboseCallback(onSuccess)(obj);
+			     }
+		     }
+		     catch(e) {
+			     onFailure(e);
+		     }
+	     },
 
-	all:function(callback) {
-		var cb = this.terseToVerboseCallback(callback);
-		var results = [];
-		for (var i = 0, l = this.storage.length; i < l; ++i) {
-			var id = this.storage.key(i);
-			var tbl = id.split('::')[0]
-			var key = id.split('::').slice(1).join("::");
-			if (tbl == this.table) {
-				var obj = this.deserialize(this.storage.getItem(id));
-				obj.key = key;
-				results.push(obj);
-			}
-		}
-		if (cb)
-			cb(results);
-	},
+	get:function(key, onSuccess, onFailure) {
+		    try {	
+			    var obj = this.deserialize(this.storage.getItem(this.table + '::' + key))
+				    , cb = this.terseToVerboseCallback(onSuccess);
 
-	remove:function(keyOrObj, callback) {
-		var key = this.table + '::' + (typeof keyOrObj === 'string' ? keyOrObj : keyOrObj.key);
-		this.storage.removeItem(key);
-		if(callback)
-		  this.terseToVerboseCallback(callback)();
-	},
+			    if (obj) {
+				    obj.key = key;
+				    if (onSuccess) cb(obj);
+			    } else {
+				    if (onSuccess) cb(null);
+			    }
+		    }
+		    catch(e) {
+			    onFailure(e);
+		    }
+	    },
 
-	nuke:function(callback) {
-		var self = this;
-		this.all(function(r) {
-			for (var i = 0, l = r.length; i < l; i++) {
-				self.remove(r[i]);
-			}
-			if(callback)
-			  self.terseToVerboseCallback(callback)();
-		});
-	}
+	all:function(onSuccess, onFailure) {
+		    try {
+			    var cb = this.terseToVerboseCallback(onSuccess);
+			    var results = [];
+			    for (var i = 0, l = this.storage.length; i < l; ++i) {
+				    var id = this.storage.key(i);
+				    var tbl = id.split('::')[0]
+					    var key = id.split('::').slice(1).join("::");
+				    if (tbl == this.table) {
+					    var obj = this.deserialize(this.storage.getItem(id));
+					    obj.key = key;
+					    results.push(obj);
+				    }
+			    }
+			    if (cb)
+				    cb(results);
+		    }
+		    catch(e) {
+			    onFailure(e);
+		    }
+	    },
+
+	remove:function(keyOrObj, onSuccess, onFailure) {
+		       try {
+			       var key = this.table + '::' + (typeof keyOrObj === 'string' ? keyOrObj : keyOrObj.key);
+			       this.storage.removeItem(key);
+			       if(onSuccess)
+				       this.terseToVerboseCallback(onSuccess)();
+		       }
+		       catch(e) {
+			       onFailure(e);
+		       }
+	       },
+
+	nuke:function(onSuccess, onFailure) {
+		     try {
+			     var self = this;
+			     this.all(function(r) {
+				     for (var i = 0, l = r.length; i < l; i++) {
+					     self.remove(r[i]);
+				     }
+				     if(onSuccess)
+				     self.terseToVerboseCallback(onSuccess)();
+			     });
+		     }
+		     catch(e) {
+			     onFailure(e);
+		     }
+	     }
 };
